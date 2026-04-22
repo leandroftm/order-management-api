@@ -21,7 +21,6 @@ public class Product {
     private Long id;
     @Column(nullable = false)
     private String name;
-    @Column(nullable = true)
     private String description;
     @Column(nullable = false)
     private BigDecimal price;
