@@ -1,7 +1,11 @@
 package com.leandroftm.ordermanagement.order_management_api.exception.domain;
 
-public class NotFoundException extends RuntimeException {
-  public NotFoundException(String message) {
-    super(message);
-  }
+import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
+
+public class NotFoundException extends DomainException {
+    public NotFoundException(String message, ErrorCode errorCode) {
+        super(
+                message, errorCode
+        );
+    }
 }
