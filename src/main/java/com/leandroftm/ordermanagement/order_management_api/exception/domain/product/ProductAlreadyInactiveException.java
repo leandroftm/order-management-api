@@ -3,11 +3,11 @@ package com.leandroftm.ordermanagement.order_management_api.exception.domain.pro
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
 
-public class InsufficientStockException extends DomainException {
-    public InsufficientStockException() {
+public class ProductAlreadyInactiveException extends DomainException {
+    public ProductAlreadyInactiveException() {
         super(
-                "Insufficient stock",
-                ErrorCode.INSUFFICIENT_STOCK
+                "Product already inactive",
+                ErrorCode.PRODUCT_ALREADY_INACTIVE
         );
     }
 }
