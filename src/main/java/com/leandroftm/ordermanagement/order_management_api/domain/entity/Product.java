@@ -1,7 +1,9 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryNullException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InsufficientStockException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.ProductCategoryMismatchException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InvalidStockException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductAlreadyActiveException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductAlreadyInactiveException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,7 +56,7 @@ public class Product {
             Category category) {
 
         if (category == null) {
-            throw new CategoryNullException();
+            throw new ProductCategoryMismatchException();
         }
 
         Product product = new Product(name, description, price, stock);
@@ -65,7 +67,7 @@ public class Product {
 
     @PrePersist
     public void prePersist() {
-        this.active = true;
+        activateInternal();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = createdAt;
     }
@@ -75,16 +77,45 @@ public class Product {
         this.updatedAt = LocalDateTime.now();
     }
 
-    //move to service later
     public void increaseStock(int amount) {
         this.stock += amount;
     }
 
-    //move to service later
     public void decreaseStock(int amount) {
         if (this.stock < amount) {
-            throw new InsufficientStockException();
+            throw new InvalidStockException();
         }
         this.stock -= amount;
+    }
+
+    public void updateDetails(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public void disable() {
+        if (!this.active) {
+            throw new ProductAlreadyInactiveException();
+        }
+        deactivateInternal();
+    }
+
+    public void enable() {
+        if (this.active) {
+            throw new ProductAlreadyActiveException();
+        }
+        activateInternal();
+    }
+
+    private void activateInternal() {
+        this.active = true;
+    }
+
+    private void deactivateInternal() {
+        this.active = false;
+    }
+
+    public void updatePrice(BigDecimal newPrice) {
+        this.price = newPrice;
     }
 }
