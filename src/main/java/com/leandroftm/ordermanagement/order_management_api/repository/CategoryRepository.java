@@ -4,4 +4,5 @@ import com.leandroftm.ordermanagement.order_management_api.domain.entity.Categor
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CategoryRepository extends JpaRepository<Category,Long> {
+    boolean existsByName(String name);
 }
