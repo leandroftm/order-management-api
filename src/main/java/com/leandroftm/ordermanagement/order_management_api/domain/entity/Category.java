@@ -37,7 +37,7 @@ public class Category {
     public void update(String name) {
         if (name == null || name.isBlank())
             throw new InvalidCategoryNameException();
-            this.name = name;
+        this.name = name;
     }
 
     public void disable() {
