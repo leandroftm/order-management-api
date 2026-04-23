@@ -1,4 +1,8 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.dto.request;
 
-public record CreateCategoryRequest() {
+import com.leandroftm.ordermanagement.order_management_api.domain.entity.Product;
+
+public record CreateCategoryRequest(
+        String name
+) {
 }
