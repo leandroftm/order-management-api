@@ -8,14 +8,16 @@ public record ProductResponse(
         String name,
         String description,
         BigDecimal price,
-        Long categoryId
+        Long categoryId,
+        String categoryName
 ) {
     public ProductResponse(Product product) {
         this(
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
-                product.getCategory().getId()
+                product.getCategory().getId(),
+                product.getCategory().getName()
         );
     }
 }
