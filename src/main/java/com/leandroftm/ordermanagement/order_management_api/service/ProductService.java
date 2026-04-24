@@ -1,7 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.CreateProductRequest;
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.UpdateProductRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateProductRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateProductRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.ProductResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Category;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Product;

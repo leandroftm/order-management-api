@@ -1,7 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.CreateCategoryRequest;
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.UpdateCategoryRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateCategoryRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateCategoryRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.CategoryResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Category;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryAlreadyExistsException;
