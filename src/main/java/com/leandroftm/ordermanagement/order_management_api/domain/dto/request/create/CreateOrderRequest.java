@@ -1,5 +1,6 @@
-package com.leandroftm.ordermanagement.order_management_api.domain.dto.request;
+package com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -8,6 +9,7 @@ import java.util.List;
 public record CreateOrderRequest(
         @NotNull
         Long userId,
+        @Valid
         @NotEmpty
         List<CreateOrderItemRequest> orderItems
 ) {

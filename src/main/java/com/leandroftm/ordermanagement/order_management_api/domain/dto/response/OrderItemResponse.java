@@ -19,7 +19,7 @@ public record OrderItemResponse(
                 orderItem.getQuantity(),
                 orderItem.getUnitPrice(),
                 orderItem.getDiscount(),
-                orderItem.calcItemTotalPrice()
+                orderItem.calculateItemTotalPrice()
         );
     }
 }

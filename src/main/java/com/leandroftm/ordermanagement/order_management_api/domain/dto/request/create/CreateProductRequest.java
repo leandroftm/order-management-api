@@ -1,4 +1,4 @@
-package com.leandroftm.ordermanagement.order_management_api.domain.dto.request;
+package com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
