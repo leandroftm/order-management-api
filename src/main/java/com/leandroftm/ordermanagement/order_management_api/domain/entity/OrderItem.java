@@ -27,7 +27,7 @@ public class OrderItem {
     @Min(0)
     @Max(100)
     @Column(nullable = false)
-    private BigDecimal discount = BigDecimal.ZERO;
+    private BigDecimal discountPercentage = BigDecimal.ZERO;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
@@ -42,22 +42,28 @@ public class OrderItem {
         }
     }
 
-    public BigDecimal calcItemTotalPrice() {
-        if (product == null || product.getPrice() == null || quantity == null) {
-            return BigDecimal.ZERO;
+    //calculate item total price
+    public BigDecimal calculateItemTotalPrice() {
+        BigDecimal gross = calculateGrossTotal();
+        return gross.subtract(gross.multiply(discountRate()))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    //(price * quantity)
+    private BigDecimal calculateGrossTotal() {
+        if (unitPrice == null || quantity == null) {
+            throw new IllegalStateException("Invalid order item state");
         }
+        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
 
-        //(price * quantity)
-        BigDecimal grossTotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+    //return current discount
+    private BigDecimal currentDiscount() {
+        return (discountPercentage == null) ? BigDecimal.ZERO : discountPercentage;
+    }
 
-        BigDecimal currentDiscount = (discount == null) ? BigDecimal.ZERO : discount;
-
-        //calculate discount
-        BigDecimal discountMultiplier = currentDiscount.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
-
-        //calculate discount amount
-        BigDecimal discountAmount = grossTotal.multiply(discountMultiplier);
-
-        return grossTotal.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
+    //calculate discount
+    private BigDecimal discountRate() {
+        return currentDiscount().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
     }
 }
