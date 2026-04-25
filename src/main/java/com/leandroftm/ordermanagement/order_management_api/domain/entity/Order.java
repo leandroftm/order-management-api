@@ -43,13 +43,20 @@ public class Order {
         this.updatedAt = this.createdAt;
     }
 
-    public void addOrderItem(OrderItem orderItem) {
-        BigDecimal itemTotal = orderItem.getUnitPrice()
-                .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+    public void create(User user) {
+        this.user = user;
+    }
 
-        this.totalAmount = this.totalAmount.add(itemTotal);
+    private void recalculateTotal() {
+        this.totalAmount = orderItems.stream()
+                .map(OrderItem::calculateItemTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
         orderItem.setOrder(this);
         orderItems.add(orderItem);
+        recalculateTotal();
     }
 
     public void removeOrderItem(OrderItem orderItem) {
