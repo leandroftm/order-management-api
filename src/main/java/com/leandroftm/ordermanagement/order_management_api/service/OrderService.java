@@ -1,11 +1,16 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateOrderRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateOrderStatusRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.OrderResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Order;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.OrderItem;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Product;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.User;
+import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderStatusException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.OrderNotFoundException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InsuficientStockException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductNotFoundException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserNotFoundException;
@@ -35,6 +40,10 @@ public class OrderService {
         //fill order items with products
         List<OrderItem> items = findOrderItems(request);
 
+        if(items.isEmpty()) {
+            throw new InvalidOrderException();
+        }
+
         for (OrderItem item : items) {
             if (item.getProduct().getStock() < item.getQuantity()) {
                 throw new InsuficientStockException();
@@ -43,12 +52,7 @@ public class OrderService {
 
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Order order = new Order();
-        order.create(user);
-
-        for (OrderItem item : items) {
-            item.getProduct().decreaseStock(item.getQuantity());
-            order.addOrderItem(item);
-        }
+        order.create(user, items);
 
         Order savedOrder = orderRepository.save(order);
         return new OrderResponse(savedOrder);
@@ -57,6 +61,32 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Page<OrderResponse> getOrders(Pageable pageable) {
         return orderRepository.findAll(pageable).map(OrderResponse::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersByUser(Long userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable).map(OrderResponse::new);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(Long orderId) {
+        return orderRepository.findById(orderId).map(OrderResponse::new).orElseThrow(OrderNotFoundException::new);
+    }
+
+    public void updateStatus(Long orderId, UpdateOrderStatusRequest request) {
+        Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+        Status current = order.getStatus();
+        Status target = request.status();
+
+        if (current != Status.CREATED) {
+            throw new InvalidOrderStatusException();
+        } else if (target == Status.CANCELLED) {
+            order.cancel();
+        } else if (target == Status.PAID) {
+            order.markAsPaid();
+        } else {
+            throw new InvalidOrderStatusException();
+        }
     }
 
     private List<OrderItem> findOrderItems(CreateOrderRequest request) {
