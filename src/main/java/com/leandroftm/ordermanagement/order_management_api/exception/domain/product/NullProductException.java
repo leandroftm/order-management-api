@@ -3,11 +3,11 @@ package com.leandroftm.ordermanagement.order_management_api.exception.domain.pro
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
 
-public class InsuficientStockException extends DomainException {
-    public InsuficientStockException() {
+public class NullProductException extends DomainException {
+    public NullProductException() {
         super(
-                "Insuficient stock amount",
-                ErrorCode.INSUFFICIENT_STOCK
+                "Product cannot be null",
+                ErrorCode.PRODUCT_NULL
         );
     }
 }
