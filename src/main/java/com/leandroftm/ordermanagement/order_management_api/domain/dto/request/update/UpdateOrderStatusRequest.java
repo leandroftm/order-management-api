@@ -1,4 +1,8 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update;
 
-public record UpdateOrderStatusRequest() {
+import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
+
+public record UpdateOrderStatusRequest(
+        Status status
+) {
 }
