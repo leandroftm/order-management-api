@@ -1,5 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.NullProductException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -65,5 +66,12 @@ public class OrderItem {
     //calculate discount
     private BigDecimal discountRate() {
         return currentDiscount().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+    }
+
+    public void restoreStock() {
+        if(this.product == null) {
+            throw new NullProductException();
+        }
+        this.product.increaseStock(this.quantity);
     }
 }
