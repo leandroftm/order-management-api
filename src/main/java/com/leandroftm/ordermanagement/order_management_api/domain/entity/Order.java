@@ -1,6 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderStatusException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,9 +44,34 @@ public class Order {
         this.updatedAt = this.createdAt;
     }
 
-    public void create(User user) {
+    public void create(User user, List<OrderItem> orderItems) {
         this.user = user;
+
+        for (OrderItem item : orderItems) {
+            item.getProduct().decreaseStock(item.getQuantity());
+            addOrderItem(item);
+        }
     }
+
+    public void cancel() {
+        if (this.status != Status.CREATED) {
+            throw new InvalidOrderStatusException();
+        }
+
+        this.status = Status.CANCELLED;
+
+        for (OrderItem item : this.orderItems) {
+            item.restoreStock();
+        }
+    }
+
+    public void markAsPaid() {
+        if (this.status != Status.CREATED) {
+            throw new InvalidOrderStatusException();
+        }
+        this.status = Status.PAID;
+    }
+
 
     private void recalculateTotal() {
         this.totalAmount = orderItems.stream()
