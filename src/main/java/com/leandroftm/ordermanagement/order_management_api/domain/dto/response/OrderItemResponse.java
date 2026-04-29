@@ -18,7 +18,7 @@ public record OrderItemResponse(
                 orderItem.getProduct().getCategory().getName(),
                 orderItem.getQuantity(),
                 orderItem.getUnitPrice(),
-                orderItem.getDiscount(),
+                orderItem.getDiscountPercentage(),
                 orderItem.calculateItemTotalPrice()
         );
     }
