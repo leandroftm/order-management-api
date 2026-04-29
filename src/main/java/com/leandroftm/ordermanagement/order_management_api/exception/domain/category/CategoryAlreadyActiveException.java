@@ -7,7 +7,7 @@ public class CategoryAlreadyActiveException extends DomainException {
     public CategoryAlreadyActiveException() {
         super(
                 "Category already active",
-                ErrorCode.Category_ALREADY_ACTIVE
+                ErrorCode.CATEGORY_ALREADY_ACTIVE
         );
     }
 }
