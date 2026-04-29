@@ -26,7 +26,7 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;
 
-    public ProductResponse create(Long categoryId, CreateProductRequest request) {
+    public Long create(Long categoryId, CreateProductRequest request) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
 
@@ -41,12 +41,20 @@ public class ProductService {
         );
 
         Product savedProduct = productRepository.save(product);
-        return new ProductResponse(savedProduct);
+        return savedProduct.getId();
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> findAll(Pageable pageable) {
         return productRepository.findAll(pageable).map(ProductResponse::new);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponse findById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(ProductNotFoundException::new);
+
+        return new ProductResponse(product);
     }
 
     @Transactional(readOnly = true)
@@ -57,41 +65,42 @@ public class ProductService {
         return productRepository.findAllByCategory(categoryId);
     }
 
-    public void update(Long categoryId, Long productId, UpdateProductRequest request) {
-        Product product = productRepository.findByIdAndCategoryId(productId, categoryId)
+    //ADMIN ROLE
+    public void update( Long productId, UpdateProductRequest request) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
         product.updateDetails(request.name(), request.description());
     }
 
-    public void updatePrice(Long categoryId, Long productId, BigDecimal newPrice) {
+    public void updatePrice(Long productId, BigDecimal newPrice) {
         if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidProductPriceException();
         }
 
-        Product product = productRepository.findByIdAndCategoryId(productId, categoryId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
         product.updatePrice(newPrice);
     }
 
-    public void increaseStock(Long categoryId, Long productId, Integer amount) {
+    public void increaseStock(Long productId, Integer amount) {
         if (amount <= 0) {
             throw new InvalidStockAmountException();
         }
 
-        Product product = productRepository.findByIdAndCategoryId(productId, categoryId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
         product.increaseStock(amount);
     }
 
-    public void decreaseStock(Long categoryId, Long productId, Integer amount) {
+    public void decreaseStock(Long productId, Integer amount) {
         if (amount <= 0) {
             throw new InvalidStockAmountException();
         }
 
-        Product product = productRepository.findByIdAndCategoryId(productId, categoryId)
+        Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
         product.decreaseStock(amount);
@@ -116,6 +125,7 @@ public class ProductService {
         }
         product.enable();
     }
+//END ADMIN ROLE
 
     private void validate(CreateProductRequest request) {
         if (request.price().compareTo(BigDecimal.ZERO) <= 0) {
