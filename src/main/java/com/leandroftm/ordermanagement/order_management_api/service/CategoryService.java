@@ -37,6 +37,12 @@ public class CategoryService {
         return categoryRepository.findAll(pageable).map(CategoryResponse::new);
     }
 
+    @Transactional(readOnly = true)
+    public CategoryResponse getById(Long id) {
+        return categoryRepository.findById(id).map(CategoryResponse::new)
+                .orElseThrow(CategoryNotFoundException::new);
+    }
+
     public void update(Long id, UpdateCategoryRequest request) {
 
         Category category = categoryRepository.findById(id)
@@ -50,7 +56,7 @@ public class CategoryService {
         category.update(request.name());
     }
 
-    public void deactivate(Long id) {
+    public void disableCategory(Long id) {
 
         if (productRepository.existsByCategoryId(id)) {
             throw new CategoryNotEmptyException();
@@ -62,7 +68,7 @@ public class CategoryService {
         category.disable();
     }
 
-    public void activate(Long id) {
+    public void enableCategory(Long id) {
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
