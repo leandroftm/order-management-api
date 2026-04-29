@@ -1,7 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateOrderRequest;
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateOrderStatusRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.OrderResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Order;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.OrderItem;
@@ -40,7 +39,7 @@ public class OrderService {
         //fill order items with products
         List<OrderItem> items = findOrderItems(request);
 
-        if(items.isEmpty()) {
+        if (items.isEmpty()) {
             throw new InvalidOrderException();
         }
 
@@ -58,9 +57,21 @@ public class OrderService {
         return new OrderResponse(savedOrder);
     }
 
+    //GET ADMIN
     @Transactional(readOnly = true)
     public Page<OrderResponse> getOrders(Pageable pageable) {
         return orderRepository.findAll(pageable).map(OrderResponse::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersByStatus(Status status, Pageable pageable) {
+        return orderRepository.findByStatus(status, pageable).map(OrderResponse::new);
+    }
+    //END GET ADMIN
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersByUserAndOrderStatus(Long userId, Status status, Pageable pageable) {
+        return orderRepository.findByUserIdAndStatus(userId, status, pageable).map(OrderResponse::new);
     }
 
     @Transactional(readOnly = true)
@@ -73,22 +84,22 @@ public class OrderService {
         return orderRepository.findById(orderId).map(OrderResponse::new).orElseThrow(OrderNotFoundException::new);
     }
 
-    public void updateStatus(Long orderId, UpdateOrderStatusRequest request) {
-        Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
-        Status current = order.getStatus();
-        Status target = request.status();
+    //UPDATE POST
+    public void payOrder(Long orderId) {
+        Order order = getOrderIfCreated(orderId);
 
-        if (current != Status.CREATED) {
-            throw new InvalidOrderStatusException();
-        } else if (target == Status.CANCELLED) {
-            order.cancel();
-        } else if (target == Status.PAID) {
-            order.markAsPaid();
-        } else {
-            throw new InvalidOrderStatusException();
-        }
+        order.markAsPaid();
     }
 
+
+    public void cancelOrder(Long orderId) {
+        Order order = getOrderIfCreated(orderId);
+
+        order.cancel();
+    }
+    //END UPDATE POST
+
+    //HELPER
     private List<OrderItem> findOrderItems(CreateOrderRequest request) {
         return request.orderItems().stream().map(
                 itemsRequest -> {
@@ -102,5 +113,13 @@ public class OrderService {
                     return item;
                 }
         ).toList();
+    }
+
+    private Order getOrderIfCreated(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+        if (order.getStatus() != Status.CREATED)
+            throw new InvalidOrderStatusException();
+
+        return order;
     }
 }
