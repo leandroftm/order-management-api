@@ -35,7 +35,7 @@ public class OrderService {
 
     private final UserRepository userRepository;
 
-    public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
+    public Long createOrder(Long userId, CreateOrderRequest request) {
         //fill order items with products
         List<OrderItem> items = findOrderItems(request);
 
@@ -54,18 +54,13 @@ public class OrderService {
         order.create(user, items);
 
         Order savedOrder = orderRepository.save(order);
-        return new OrderResponse(savedOrder);
+        return savedOrder.getId();
     }
 
     //GET ADMIN
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getOrders(Pageable pageable) {
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable).map(OrderResponse::new);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<OrderResponse> getOrdersByStatus(Status status, Pageable pageable) {
-        return orderRepository.findByStatus(status, pageable).map(OrderResponse::new);
     }
     //END GET ADMIN
 
