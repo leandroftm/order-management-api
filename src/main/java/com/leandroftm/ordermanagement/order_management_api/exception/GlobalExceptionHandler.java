@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return buildError(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, errors, request);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        String message = "Invalid value " + ex.getValue() + "for parameter " + ex.getName();
+        return buildError(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, message, request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
