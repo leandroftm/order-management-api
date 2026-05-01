@@ -3,11 +3,11 @@ package com.leandroftm.ordermanagement.order_management_api.exception.domain.use
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
 
-public class InvalidCredentials extends DomainException {
-    public InvalidCredentials() {
+public class InvalidUserRoleException extends DomainException {
+    public InvalidUserRoleException() {
         super(
-                "Invalid Credentials",
-                ErrorCode.INVALID_CREDENTIALS
+                "Invalid user role",
+                ErrorCode.INVALID_USER_ROLE
         );
     }
 }
