@@ -62,7 +62,7 @@ public class ProductService {
         if (!categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFoundException();
         }
-        return productRepository.findAllByCategory(categoryId);
+        return productRepository.findAllByCategory(categoryId, pageable);
     }
 
     //ADMIN ROLE
