@@ -50,8 +50,7 @@ public class OrderService {
         }
 
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Order order = new Order();
-        order.create(user, items);
+        Order order = Order.create(user, items);
 
         Order savedOrder = orderRepository.save(order);
         return savedOrder.getId();
