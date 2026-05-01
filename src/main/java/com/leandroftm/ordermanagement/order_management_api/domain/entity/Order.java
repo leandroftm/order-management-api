@@ -2,10 +2,11 @@ package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderStatusException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.OrderItemsListIsEmptyException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidUserException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "orders")
 public class Order {
@@ -39,18 +39,29 @@ public class Order {
 
     @PrePersist
     public void prePersist() {
-        this.status = Status.CREATED;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
 
-    public void create(User user, List<OrderItem> orderItems) {
-        this.user = user;
+    private Order(List<OrderItem> orderItems) {
+        this.status = Status.CREATED;
 
         for (OrderItem item : orderItems) {
             item.getProduct().decreaseStock(item.getQuantity());
             addOrderItem(item);
         }
+    }
+
+    public static Order create(User user, List<OrderItem> orderItems) {
+        if(user == null) {
+            throw new InvalidUserException();
+        }
+        if(orderItems == null || orderItems.isEmpty()) {
+            throw new OrderItemsListIsEmptyException();
+        }
+        Order order = new Order(orderItems);
+        order.user =  user;
+        return order;
     }
 
     public void cancel() {
@@ -79,18 +90,21 @@ public class Order {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void addOrderItem(OrderItem orderItem) {
+    private void addOrderItem(OrderItem orderItem) {
         orderItem.setOrder(this);
         orderItems.add(orderItem);
         recalculateTotal();
     }
 
-    public void removeOrderItem(OrderItem orderItem) {
+    //not used for now
+    /*
+    private void removeOrderItem(OrderItem orderItem) {
         BigDecimal itemTotal = orderItem.getUnitPrice()
                 .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
 
-        this.totalAmount = this.totalAmount.subtract(totalAmount.add(itemTotal));
+        this.totalAmount = this.totalAmount.subtract(itemTotal);
         orderItem.setOrder(null);
         orderItems.remove(orderItem);
     }
+    */
 }
