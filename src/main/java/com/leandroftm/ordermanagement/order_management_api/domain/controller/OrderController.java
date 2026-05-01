@@ -2,7 +2,6 @@ package com.leandroftm.ordermanagement.order_management_api.domain.controller;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateOrderRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.OrderResponse;
-import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
 import com.leandroftm.ordermanagement.order_management_api.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,18 +32,6 @@ public class OrderController {
                 .toUri();
 
         return ResponseEntity.created(location).build();
-    }
-
-    //will receive user from authorization later
-    @GetMapping("/user/{userId}/status")
-    public ResponseEntity<Page<OrderResponse>> getByUserAndStatus(@PathVariable Long userId, @RequestParam Status status, @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByUserAndOrderStatus(userId, status, pageable));
-    }
-
-    //will receive user from authorization later
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<OrderResponse>> getByUser(@PathVariable Long userId, @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByUser(userId, pageable));
     }
 
     @GetMapping("/{id}")
