@@ -1,10 +1,13 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidRoleTransitionException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidUserRoleException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyActiveException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyInactiveException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,7 +15,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @Table(name = "users")
 public class User {
@@ -32,16 +34,8 @@ public class User {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
-    @Column(nullable = false)
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
-
-    public User(String email, String password, Role role) {
-        this.email = email;
-        this.password = password;
-        this.enabled = true;
-        this.role = role;
-    }
 
     @PrePersist
     public void prePersist() {
@@ -49,8 +43,50 @@ public class User {
         this.updatedAt = createdAt;
     }
 
+    public User(String email, String password, Role role) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.enabled = true;
+    }
+
+    public static User create(String email, String password, Role role) {
+        return new User(email, password, role);
+    }
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateDetails(String email, String password) {
+        if (email != null)
+            this.email = email;
+        if (password != null)
+            this.password = password;
+    }
+
+    public void enable() {
+        if (this.enabled) {
+            throw new UserAlreadyActiveException();
+        }
+        this.enabled = true;
+    }
+
+    public void updateRole(Role role) {
+        if (role == getRole()) {
+            throw new InvalidUserRoleException(); // same role assigned
+        }
+        if (this.role == Role.CUSTOMER && role != Role.CUSTOMER) {
+            throw new InvalidRoleTransitionException(); // forbidden transition
+        }
+        this.role = role;
+    }
+
+    public void disable() {
+        if (!this.enabled) {
+            throw new UserAlreadyInactiveException();
+        }
+        this.enabled = false;
     }
 }
