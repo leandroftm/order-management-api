@@ -6,10 +6,10 @@ import jakarta.validation.constraints.*;
 public record CreateUserRequest(
         @NotBlank
         @Email
-        @Max(100)
+        @Size(max = 100)
         String email,
         @NotBlank
-        @Size(min = 6, max = 100)
+        @Size(min = 6, max = 20)
         String password,
         @NotNull
         Role role

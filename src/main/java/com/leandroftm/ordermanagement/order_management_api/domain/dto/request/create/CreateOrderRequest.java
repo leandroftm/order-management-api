@@ -2,7 +2,6 @@ package com.leandroftm.ordermanagement.order_management_api.domain.dto.request.c
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
