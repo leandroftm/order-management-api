@@ -6,8 +6,8 @@ CREATE TABLE products
     price       DECIMAL     NOT NULL,
     stock       INTEGER     NOT NULL,
     active      BOOLEAN     NOT NULL,
-    createdAt   DATE        NOT NULL,
-    updatedAt   DATE        NOT NULL,
+    created_at   DATE        NOT NULL,
+    updated_at   DATE        NOT NULL,
     category_id BIGINT      NOT NULL,
 
 
