@@ -1,6 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateProductRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdatePriceRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateProductRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.ProductResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Category;
@@ -66,14 +67,15 @@ public class ProductService {
     }
 
     //ADMIN ROLE
-    public void update( Long productId, UpdateProductRequest request) {
+    public void update(Long productId, UpdateProductRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
         product.updateDetails(request.name(), request.description());
     }
 
-    public void updatePrice(Long productId, BigDecimal newPrice) {
+    public void updatePrice(Long productId, UpdatePriceRequest request) {
+        BigDecimal newPrice = request.price();
         if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidProductPriceException();
         }
