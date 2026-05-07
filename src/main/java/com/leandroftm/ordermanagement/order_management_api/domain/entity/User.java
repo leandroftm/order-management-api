@@ -2,7 +2,6 @@ package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidRoleTransitionException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidUserRoleException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyActiveException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyInactiveException;
 import jakarta.persistence.*;
@@ -73,19 +72,20 @@ public class User {
         this.enabled = true;
     }
 
-    public void updateRole(Role role) {
-        if (role == getRole()) {
-            throw new InvalidUserRoleException(); // same role assigned
-        }
-        if (this.role == Role.CUSTOMER && role != Role.CUSTOMER) {
-            throw new InvalidRoleTransitionException(); // forbidden transition
-        }
-        this.role = role;
-    }
+    //REMOVED assign user role
+//    public void updateRole(Role role) {
+//        if (role == getRole()) {
+//            throw new InvalidUserRoleException(); // same role assigned
+//        }
+//        this.role = role;
+//    }
 
     public void disable() {
         if (!this.enabled) {
             throw new UserAlreadyInactiveException();
+        }
+        if(this.role == Role.ADMIN) {
+            throw new InvalidRoleTransitionException();
         }
         this.enabled = false;
     }
