@@ -1,11 +1,11 @@
 package com.leandroftm.ordermanagement.order_management_api.security.service;
 
-import com.leandroftm.ordermanagement.order_management_api.domain.entity.User;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidCredentialsException;
 import com.leandroftm.ordermanagement.order_management_api.security.dto.LoginRequest;
-import com.leandroftm.ordermanagement.order_management_api.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,14 +13,17 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final TokenService tokenService;
-    private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authManager;
 
     public String authenticate(LoginRequest request) {
-        User user = userService.findUserByEmail(request.email());
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new InvalidCredentialsException();
-        }
+        Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                )
+        );
+
+        UserDetails user = (UserDetails) auth.getPrincipal();
         return tokenService.generateToken(user);
     }
 }
