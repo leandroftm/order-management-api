@@ -1,4 +1,8 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update;
 
-public record UpdatePriceRequest() {
+import java.math.BigDecimal;
+
+public record UpdatePriceRequest(
+        BigDecimal price
+) {
 }
