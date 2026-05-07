@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,6 +28,7 @@ public class CategoryController {
 
     private final ProductService productService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Void> create(@RequestBody @Valid CreateCategoryRequest request) {
         Long id = categoryService.create(request);
@@ -39,6 +41,7 @@ public class CategoryController {
         return ResponseEntity.created(location).build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{categoryId}/products")
     public ResponseEntity<Void> addProduct(@PathVariable Long categoryId, @RequestBody @Valid CreateProductRequest request) {
         Long id = productService.create(categoryId, request);
@@ -66,23 +69,26 @@ public class CategoryController {
     }
 
     @GetMapping("/{categoryId}/products")
-    public ResponseEntity<Page<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId, Pageable pageable) {
+    public ResponseEntity<Page<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId, @PageableDefault(size = 10, sort = "name") Pageable pageable) {
         Page<ProductResponse> page = productService.findAllProductsByCategory(categoryId, pageable);
         return ResponseEntity.ok(page);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid UpdateCategoryRequest request) {
         categoryService.update(id, request);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/enable")
     public ResponseEntity<Void> enable(@PathVariable Long id) {
         categoryService.enableCategory(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/disable")
     public ResponseEntity<Void> disable(@PathVariable Long id) {
         categoryService.disableCategory(id);
