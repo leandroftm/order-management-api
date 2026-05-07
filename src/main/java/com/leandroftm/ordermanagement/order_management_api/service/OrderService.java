@@ -58,10 +58,19 @@ public class OrderService {
 
     //GET ADMIN
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable).map(OrderResponse::new);
+    public Page<OrderResponse> getAllOrders(Status status, Pageable pageable) {
+        if (status != null)
+            return orderRepository.findByStatus(status, pageable).map(OrderResponse::new);
+        else
+            return orderRepository.findAll(pageable).map(OrderResponse::new);
     }
     //END GET ADMIN
+
+    @Transactional(readOnly = true)
+    public OrderResponse findByIdAndUserId(Long orderId, Long userId) {
+        return orderRepository.findByIdAndUserId(orderId, userId)
+                .map(OrderResponse::new).orElseThrow(OrderNotFoundException::new);
+    }
 
     @Transactional(readOnly = true)
     public Page<OrderResponse> getOrdersByUserAndOrderStatus(Long userId, Status status, Pageable pageable) {
