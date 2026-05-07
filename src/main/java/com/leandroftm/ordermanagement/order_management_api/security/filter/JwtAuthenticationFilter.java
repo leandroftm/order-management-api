@@ -1,7 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.security.filter;
 
-import com.leandroftm.ordermanagement.order_management_api.domain.entity.User;
-import com.leandroftm.ordermanagement.order_management_api.repository.UserRepository;
+import com.leandroftm.ordermanagement.order_management_api.security.service.CustomUserDetailsService;
 import com.leandroftm.ordermanagement.order_management_api.security.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,18 +9,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final UserRepository userRepository;
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -41,20 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = recoverToken(request);
 
         if (token != null) {
-            String userId = tokenService.validateToken(token);
+            String userEmail = tokenService.extractUsername(token);
 
-            if (userId != null) {
-                User user = userRepository.findById(Long.valueOf(userId)).orElse(null);
-                if (user == null) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails user = userDetailsService.loadUserByUsername(userEmail);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         user,
-                        null,
-                        List.of()
+                        null, //password null because already authenticated user
+                        user.getAuthorities()
                 );
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
