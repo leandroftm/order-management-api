@@ -1,7 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateUserRequest;
-import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateUserRoleRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.UserResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.User;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
@@ -32,8 +31,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserResponse> getUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(UserResponse::new);
+    public Page<UserResponse> getUsers(Role role, Pageable pageable) {
+        if (role != null)
+            return userRepository.findByRoleIgnoreCase(role, pageable).map(UserResponse::new);
+        else
+            return userRepository.findAll(pageable).map(UserResponse::new);
     }
 
     @Transactional(readOnly = true)
@@ -42,10 +44,7 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    @Transactional(readOnly = true)
-    public Page<UserResponse> getUsersByRole(Role role, Pageable pageable) {
-        return userRepository.findByRoleIgnoreCase(role, pageable).map(UserResponse::new);
-    }
+    //get users by role merged with get all users
 
     @Transactional(readOnly = true)
     public User findUserByEmail(String email) {
@@ -75,10 +74,11 @@ public class UserService {
         user.enable();
     }
 
-    public void assignRole(Long id, UpdateUserRoleRequest request) {
-        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
-        user.updateRole(request.role());
-    }
+    //REMOVED assign user role
+//    public void assignRole(Long id, UpdateUserRoleRequest request) {
+//        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+//        user.updateRole(request.role());
+//    }
 
     private void validateEmail(String oldEmail, String newEmail) {
         if (oldEmail.equals(newEmail)) {
