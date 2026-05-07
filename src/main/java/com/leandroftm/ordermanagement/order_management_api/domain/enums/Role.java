@@ -1,7 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.enums;
 
 public enum Role {
-    ADMIN,
-    REGULAR,
-    CUSTOMER
+    USER,
+    ADMIN
 }
