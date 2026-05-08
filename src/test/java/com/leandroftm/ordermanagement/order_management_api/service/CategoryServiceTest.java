@@ -92,7 +92,7 @@ public class CategoryServiceTest {
 
         assertNotNull(response);
         assertEquals("Category test", response.name());
-        verify(categoryRepository, times(1)).findById(id);
+        verify(categoryRepository).findById(id);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class CategoryServiceTest {
         assertFalse(savedCategory.isActive());
         verify(categoryRepository).findById(id);
         verify(categoryRepository).save(savedCategory);
-        verifyNoMoreInteractions(categoryRepository);
+        verifyNoMoreInteractions(categoryRepository, productRepository);
     }
 
     //#Excentions
@@ -203,6 +203,6 @@ public class CategoryServiceTest {
         assertThrows(CategoryNotEmptyException.class,
                 () -> categoryService.disableCategory(id));
 
-        verifyNoMoreInteractions(categoryRepository);
+        verifyNoMoreInteractions(categoryRepository, productRepository);
     }
 }
