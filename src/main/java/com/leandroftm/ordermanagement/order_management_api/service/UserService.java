@@ -9,6 +9,7 @@ import com.leandroftm.ordermanagement.order_management_api.repository.UserReposi
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +19,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Long create(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException();
         }
 
-        User user = User.create(request.email(), request.password(), request.role());
+        String encodedPassword = passwordEncoder.encode(request.password());
+
+        User user = User.create(request.email(), encodedPassword, request.role());
 
         User savedUser = userRepository.save(user);
         return savedUser.getId();
