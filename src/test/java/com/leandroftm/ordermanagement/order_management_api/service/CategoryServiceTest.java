@@ -7,6 +7,7 @@ import com.leandroftm.ordermanagement.order_management_api.domain.entity.Categor
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryAlreadyExistsException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryNotEmptyException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryNotFoundException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.CategoryAlreadyInactiveException;
 import com.leandroftm.ordermanagement.order_management_api.repository.CategoryRepository;
 import com.leandroftm.ordermanagement.order_management_api.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -105,12 +106,12 @@ public class CategoryServiceTest {
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
 
-        when(categoryRepository.existsByNameIgnoreCase(request.name())).thenReturn(false);
+        when(categoryRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)).thenReturn(false);
 
         categoryService.update(id, request);
 
         verify(categoryRepository).findById(id);
-        verify(categoryRepository).existsByNameIgnoreCase(request.name());
+        verify(categoryRepository).existsByNameIgnoreCaseAndIdNot(request.name(), id);
         verify(categoryRepository).save(argThat(category ->
                 category.getName().equals("Updated Category test")));
 
@@ -118,91 +119,125 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void shouldEnableCategorySuccessfully() {
-        Category savedCategory = new Category("Saved Category test");
-        ReflectionTestUtils.setField(savedCategory, "id", id);
-
-        when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
-
-        assertFalse(savedCategory.isActive());
-
-        categoryService.enableCategory(id);
-
-        assertTrue(savedCategory.isActive());
-        verify(categoryRepository).findById(id);
-        verify(categoryRepository).save(savedCategory);
-        verifyNoMoreInteractions(categoryRepository);
-    }
-
-    @Test
-    void shouldDisableCategorySuccessfully() {
-        Category savedCategory = new Category("Saved Category test");
-        ReflectionTestUtils.setField(savedCategory, "id", id);
-        savedCategory.enable();
-
-        when(productRepository.existsByCategoryId(id)).thenReturn(false);
-        when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
-
-
-        assertTrue(savedCategory.isActive());
-        categoryService.disableCategory(id);
-
-        assertFalse(savedCategory.isActive());
-        verify(categoryRepository).findById(id);
-        verify(categoryRepository).save(savedCategory);
-        verifyNoMoreInteractions(categoryRepository, productRepository);
-    }
-
-    //#Excentions
-
-    @Test
-    void shouldThrowExceptionWhenOnCreateCategoryNameAlreadyExists() {
-        CreateCategoryRequest request = new CreateCategoryRequest(
-                "Category test"
-        );
-
-        when(categoryRepository.existsByNameIgnoreCase(request.name())).thenReturn(true);
-
-        assertThrows(CategoryAlreadyExistsException.class,
-                () -> categoryService.create(request));
-
-        verify(categoryRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenOnUpdateCategoryNameAlreadyExists() {
+    void shouldUpdateCategoryKeepingSameName() {
         UpdateCategoryRequest request = new UpdateCategoryRequest(
-                "New Category test"
+                "Saved Category test"
         );
         Category savedCategory = new Category("Saved Category test");
+        ReflectionTestUtils.setField(savedCategory, "id", id);
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
 
-        when(categoryRepository.existsByNameIgnoreCase(request.name())).thenReturn(true);
+        when(categoryRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)).thenReturn(false);
 
-        assertThrows(CategoryAlreadyExistsException.class,
-                () -> categoryService.update(id, request));
+        categoryService.update(id, request);
 
-        verify(categoryRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenCategoryNotFound() {
-        when(categoryRepository.findById(id)).thenReturn(Optional.empty());
-
-        assertThrows(CategoryNotFoundException.class,
-                () -> categoryService.getById(id));
+        verify(categoryRepository).findById(id);
+        verify(categoryRepository).existsByNameIgnoreCaseAndIdNot(request.name(), id);
+        verify(categoryRepository).save(argThat(category ->
+                category.getName().equals("Saved Category test")));
 
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    @Test
-    void shouldThrowExceptionWhenDisablingNotEmptyCategory() {
-        when(productRepository.existsByCategoryId(id)).thenReturn(true);
+        @Test
+        void shouldEnableCategorySuccessfully () {
+            Category savedCategory = new Category("Saved Category test");
+            ReflectionTestUtils.setField(savedCategory, "id", id);
 
-        assertThrows(CategoryNotEmptyException.class,
-                () -> categoryService.disableCategory(id));
+            when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
 
-        verifyNoMoreInteractions(categoryRepository, productRepository);
+            assertFalse(savedCategory.isActive());
+
+            categoryService.enableCategory(id);
+
+            assertTrue(savedCategory.isActive());
+            verify(categoryRepository).findById(id);
+            verify(categoryRepository).save(savedCategory);
+            verifyNoMoreInteractions(categoryRepository);
+        }
+
+        @Test
+        void shouldDisableCategorySuccessfully () {
+            Category savedCategory = new Category("Saved Category test");
+            ReflectionTestUtils.setField(savedCategory, "id", id);
+            savedCategory.enable();
+
+            when(productRepository.existsByCategoryId(id)).thenReturn(false);
+            when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
+
+
+            assertTrue(savedCategory.isActive());
+            categoryService.disableCategory(id);
+
+            assertFalse(savedCategory.isActive());
+            verify(categoryRepository).findById(id);
+            verify(categoryRepository).save(savedCategory);
+            verifyNoMoreInteractions(categoryRepository, productRepository);
+        }
+
+        //#Excentions
+
+        @Test
+        void shouldThrowExceptionWhenOnCreateCategoryNameAlreadyExists () {
+            CreateCategoryRequest request = new CreateCategoryRequest(
+                    "Category test"
+            );
+
+            when(categoryRepository.existsByNameIgnoreCase(request.name())).thenReturn(true);
+
+            assertThrows(CategoryAlreadyExistsException.class,
+                    () -> categoryService.create(request));
+
+            verify(categoryRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldThrowExceptionWhenOnUpdateCategoryNameAlreadyExists () {
+            UpdateCategoryRequest request = new UpdateCategoryRequest(
+                    "New Category test"
+            );
+            Category savedCategory = new Category("Saved Category test");
+
+            when(categoryRepository.findById(id)).thenReturn(Optional.of(savedCategory));
+
+            when(categoryRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)).thenReturn(true);
+
+            assertThrows(CategoryAlreadyExistsException.class,
+                    () -> categoryService.update(id, request));
+
+            verify(categoryRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldThrowExceptionWhenCategoryNotFound () {
+            when(categoryRepository.findById(id)).thenReturn(Optional.empty());
+
+            assertThrows(CategoryNotFoundException.class,
+                    () -> categoryService.getById(id));
+
+            verifyNoMoreInteractions(categoryRepository);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenDisablingNotEmptyCategory () {
+            when(productRepository.existsByCategoryId(id)).thenReturn(true);
+
+            assertThrows(CategoryNotEmptyException.class,
+                    () -> categoryService.disableCategory(id));
+
+            verifyNoMoreInteractions(categoryRepository, productRepository);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenCategoryAlreadyDisabled () {
+            when(productRepository.existsByCategoryId(id)).thenReturn(false);
+
+            when(categoryRepository.findById(id)).thenReturn(Optional.of(new Category("Category test")));
+
+            assertThrows(CategoryAlreadyInactiveException.class,
+                    () -> categoryService.disableCategory(id));
+
+            verifyNoMoreInteractions(categoryRepository, productRepository);
+        }
     }
-}
