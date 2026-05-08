@@ -25,7 +25,7 @@ public class CategoryService {
     private final ProductRepository productRepository;
 
     public Long create(CreateCategoryRequest request) {
-        if (categoryRepository.existsByName(request.name())) {
+        if (categoryRepository.existsByNameIgnoreCase(request.name())) {
             throw new CategoryAlreadyExistsException();
         }
 
@@ -49,11 +49,12 @@ public class CategoryService {
                 .orElseThrow(CategoryNotFoundException::new);
 
         if (!category.getName().equals(request.name()) &&
-                categoryRepository.existsByName(request.name())) {
+                categoryRepository.existsByNameIgnoreCase(request.name())) {
             throw new CategoryAlreadyExistsException();
         }
 
         category.update(request.name());
+        categoryRepository.save(category);
     }
 
     public void disableCategory(Long id) {
@@ -66,6 +67,7 @@ public class CategoryService {
                 .orElseThrow(CategoryNotFoundException::new);
 
         category.disable();
+        categoryRepository.save(category);
     }
 
     public void enableCategory(Long id) {
@@ -74,5 +76,6 @@ public class CategoryService {
                 .orElseThrow(CategoryNotFoundException::new);
 
         category.enable();
+        categoryRepository.save(category);
     }
 }
