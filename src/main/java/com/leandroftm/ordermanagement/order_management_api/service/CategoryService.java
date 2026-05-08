@@ -48,8 +48,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(CategoryNotFoundException::new);
 
-        if (!category.getName().equals(request.name()) &&
-                categoryRepository.existsByNameIgnoreCase(request.name())) {
+        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
             throw new CategoryAlreadyExistsException();
         }
 
