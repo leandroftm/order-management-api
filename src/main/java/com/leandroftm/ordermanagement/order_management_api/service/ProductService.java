@@ -28,10 +28,10 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
 
     public Long create(Long categoryId, CreateProductRequest request) {
+        validate(request);
+
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(CategoryNotFoundException::new);
-
-        validate(request);
 
         Product product = Product.create(
                 request.name(),
@@ -71,8 +71,15 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(ProductNotFoundException::new);
 
+        if (productRepository.existsByNameAndIdNot(request.name(), productId)) {
+            throw new ProductAlreadyExistsException();
+        }
+
         product.updateDetails(request.name(), request.description());
+        productRepository.save(product);
     }
+
+    //PATCH
 
     public void updatePrice(Long productId, UpdatePriceRequest request) {
         BigDecimal newPrice = request.price();
@@ -84,7 +91,10 @@ public class ProductService {
                 .orElseThrow(ProductNotFoundException::new);
 
         product.updatePrice(newPrice);
+        productRepository.save(product);
     }
+
+    //POST
 
     public void increaseStock(Long productId, Integer amount) {
         if (amount <= 0) {
@@ -95,6 +105,7 @@ public class ProductService {
                 .orElseThrow(ProductNotFoundException::new);
 
         product.increaseStock(amount);
+        productRepository.save(product);
     }
 
     public void decreaseStock(Long productId, Integer amount) {
@@ -106,6 +117,7 @@ public class ProductService {
                 .orElseThrow(ProductNotFoundException::new);
 
         product.decreaseStock(amount);
+        productRepository.save(product);
     }
 
     public void disableProduct(Long productId) {
@@ -116,6 +128,7 @@ public class ProductService {
             throw new ProductAlreadyInactiveException();
         }
         product.disable();
+        productRepository.save(product);
     }
 
     public void enableProduct(Long productId) {
@@ -126,6 +139,7 @@ public class ProductService {
             throw new ProductAlreadyActiveException();
         }
         product.enable();
+        productRepository.save(product);
     }
 //END ADMIN ROLE
 
