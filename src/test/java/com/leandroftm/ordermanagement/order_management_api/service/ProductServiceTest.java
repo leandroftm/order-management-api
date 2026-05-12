@@ -7,9 +7,7 @@ import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.P
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Category;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.Product;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.category.CategoryNotFoundException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InvalidProductPriceException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InvalidStockException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductNotFoundException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.*;
 import com.leandroftm.ordermanagement.order_management_api.repository.CategoryRepository;
 import com.leandroftm.ordermanagement.order_management_api.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
@@ -59,12 +57,8 @@ public class ProductServiceTest {
                 10
         );
 
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
+
         savedProduct.setCategory(savedCategory);
         ReflectionTestUtils.setField(savedProduct, "id", id);
 
@@ -114,12 +108,7 @@ public class ProductServiceTest {
     void shouldReturnProductSuccessfully() {
         Category savedCategory = new Category("Category Test");
 
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
 
         savedProduct.setCategory(savedCategory);
 
@@ -166,12 +155,8 @@ public class ProductServiceTest {
 
     @Test
     void shouldUpdateProductSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
+
         UpdateProductRequest request = new UpdateProductRequest(
                 "New Product Test",
                 ""
@@ -192,12 +177,8 @@ public class ProductServiceTest {
 
     @Test
     void shouldUpdateProductPriceSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
+
         UpdatePriceRequest request = new UpdatePriceRequest(
                 new BigDecimal("50.00")
         );
@@ -213,12 +194,7 @@ public class ProductServiceTest {
 
     @Test
     void shouldIncreaseProductStockSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
         productService.increaseStock(id, 10);
@@ -231,12 +207,7 @@ public class ProductServiceTest {
 
     @Test
     void shouldDecreaseProductStockSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
         productService.decreaseStock(id, 2);
@@ -249,12 +220,7 @@ public class ProductServiceTest {
 
     @Test
     void shouldDisableProductSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
         savedProduct.setActive(true); //ENSURE PRODUCT IS ENABLED FOR TEST
         assertTrue(savedProduct.isActive());
 
@@ -271,12 +237,7 @@ public class ProductServiceTest {
 
     @Test
     void shouldEnableProductSuccessfully() {
-        Product savedProduct = new Product(
-                "Product Name Test",
-                "",
-                new BigDecimal("100.00"),
-                10
-        );
+        Product savedProduct = createProduct();
         savedProduct.setActive(false);// ENSURE PRODUCT IS DISABLED FOR TEST
         assertFalse(savedProduct.isActive());
 
@@ -299,6 +260,8 @@ public class ProductServiceTest {
                 new BigDecimal("100.00"),
                 10
         );
+
+        when(categoryRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(CategoryNotFoundException.class, () -> productService.create(id, request));
 
@@ -343,15 +306,102 @@ public class ProductServiceTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenProductCategoryDoesNotExists() {
+    void shouldReturnNotFoundWhenProductCategoryDoesNotExists() {
         Pageable pageable = PageRequest.of(0, 10);
 
         when(categoryRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(CategoryNotFoundException.class, () -> productService.findAllProductsByCategory(1L, pageable));
+
         verifyNoMoreInteractions(categoryRepository);
     }
 
-    //TODO
-    //UPDATE EXCEPTIONS PUT PATCH POST
+    @Test
+    void shouldReturnBadRequestWhenProductOnSameCategoryAlreadyExists() {
+        UpdateProductRequest request = new UpdateProductRequest(
+                "Product Name test",
+                ""
+        );
+
+        Product savedProduct = createProduct();
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
+        when(productRepository.existsByNameAndIdNot(request.name(), id)).thenReturn(true);
+
+        assertThrows(ProductAlreadyExistsException.class, () -> productService.update(id, request));
+
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductNewPriceIsInvalid() {
+        UpdatePriceRequest request = new UpdatePriceRequest(
+                new BigDecimal("-5.00")
+        );
+
+        assertThrows(InvalidProductPriceException.class, () -> productService.updatePrice(id, request));
+
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductIncreaseStockAmountIsInvalid() {
+        assertThrows(InvalidStockAmountException.class, () -> productService.increaseStock(id, -1));
+
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductDecreaseStockAmountIsInvalid() {
+        assertThrows(InvalidStockAmountException.class, () -> productService.decreaseStock(id, -1));
+
+        verifyNoInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductDecreaseStockAmountIsBiggerThanProductStock() {
+        Product savedProduct = createProduct();
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
+
+        assertThrows(InvalidStockException.class, () -> productService.decreaseStock(id, 50));
+
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenInactivatingProductIsAlreadyDisabled() {
+        Product savedProduct = createProduct();
+        savedProduct.setActive(false);
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
+
+        assertFalse(savedProduct.isActive());
+        assertThrows(ProductAlreadyInactiveException.class, () -> productService.disableProduct(id));
+
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenActivatingProductIsAlreadyEnabled() {
+        Product savedProduct = createProduct();
+        savedProduct.setActive(true);
+
+        when(productRepository.findById(id)).thenReturn(Optional.of(savedProduct));
+
+        assertTrue(savedProduct.isActive());
+        assertThrows(ProductAlreadyActiveException.class, () -> productService.enableProduct(id));
+
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    //helper
+    private Product createProduct() {
+        return new Product(
+                "Product Name Test",
+                "",
+                new BigDecimal("100.00"),
+                10
+        );
+    }
 }
