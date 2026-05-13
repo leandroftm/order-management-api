@@ -1,6 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.service;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.create.CreateUserRequest;
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateUserRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.UserResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.User;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
@@ -38,8 +39,7 @@ public class UserService {
     public Page<UserResponse> getUsers(Role role, Pageable pageable) {
         if (role != null)
             return userRepository.findByRoleIgnoreCase(role, pageable).map(UserResponse::new);
-        else
-            return userRepository.findAll(pageable).map(UserResponse::new);
+        return userRepository.findAll(pageable).map(UserResponse::new);
     }
 
     @Transactional(readOnly = true)
@@ -50,32 +50,32 @@ public class UserService {
 
     //get users by role merged with get all users
 
-    @Transactional(readOnly = true)
-    public User findUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email).orElseThrow(InvalidCredentialsException::new);
-    }
+    //get user by email moved to CustomUserDetailsService
 
-    public void update(Long id, String email, String password) {
-        if (email == null && password == null) {
+    public void update(Long id, UpdateUserRequest request) {
+        if (request.email() == null && request.password() == null) {
             return;
         }
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
-        if (email != null) {
-            validateEmail(user.getEmail(), email);
+        if (request.email() != null) {
+            validateEmail(user.getEmail(), request.email());
         }
-        user.updateDetails(email, password);
+        user.updateDetails(request.email(), passwordEncoder.encode(request.password()));
+        userRepository.save(user);
     }
 
     public void disable(Long id) {
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
         user.disable();
+        userRepository.save(user);
     }
 
     public void enable(Long id) {
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
         user.enable();
+        userRepository.save(user);
     }
 
     //REMOVED assign user role
