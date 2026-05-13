@@ -1,7 +1,7 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.entity;
 
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.InvalidRoleTransitionException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.CannotDisableAdminException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyActiveException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserAlreadyInactiveException;
 import jakarta.persistence.*;
@@ -85,7 +85,7 @@ public class User {
             throw new UserAlreadyInactiveException();
         }
         if(this.role == Role.ADMIN) {
-            throw new InvalidRoleTransitionException();
+            throw new CannotDisableAdminException();
         }
         this.enabled = false;
     }
