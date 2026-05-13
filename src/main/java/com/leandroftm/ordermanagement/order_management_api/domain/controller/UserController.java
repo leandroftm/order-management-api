@@ -1,5 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.domain.controller;
 
+import com.leandroftm.ordermanagement.order_management_api.domain.dto.request.update.UpdateUserRequest;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.OrderResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.UserResponse;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
@@ -7,6 +8,7 @@ import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
 import com.leandroftm.ordermanagement.order_management_api.security.entity.UserPrincipal;
 import com.leandroftm.ordermanagement.order_management_api.service.OrderService;
 import com.leandroftm.ordermanagement.order_management_api.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,12 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMe(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(userService.getUser(user.getId()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<Void> update(@AuthenticationPrincipal UserPrincipal user, @RequestBody @Valid UpdateUserRequest request){
+        userService.update(user.getId(), request);
+        return ResponseEntity.noContent().build();
     }
 
     //get by role merged with get all users
