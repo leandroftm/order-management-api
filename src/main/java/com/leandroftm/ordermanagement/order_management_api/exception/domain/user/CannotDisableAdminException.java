@@ -3,11 +3,11 @@ package com.leandroftm.ordermanagement.order_management_api.exception.domain.use
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
 
-public class InvalidRoleTransitionException extends DomainException {
-    public InvalidRoleTransitionException() {
+public class CannotDisableAdminException extends DomainException {
+    public CannotDisableAdminException() {
         super(
                 "Invalid role transition",
-                ErrorCode.INVALID_ROLE_TRANSITION
+                ErrorCode.CANNOT_DISABLE_ADMIN
         );
     }
 }
