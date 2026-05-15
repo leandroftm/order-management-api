@@ -92,6 +92,7 @@ public class OrderService {
         Order order = getOrderIfCreated(orderId);
 
         order.markAsPaid();
+        orderRepository.save(order);
     }
 
 
@@ -99,6 +100,7 @@ public class OrderService {
         Order order = getOrderIfCreated(orderId);
 
         order.cancel();
+        orderRepository.save(order);
     }
     //END UPDATE POST
 
