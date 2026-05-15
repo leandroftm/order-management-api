@@ -101,7 +101,7 @@ public class OrderServiceTest {
 
     @Test
     void shouldReturnAllOrdersSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
+        Pageable pageable = PageRequest.of(0, 10);
         List<Order> orders = new ArrayList<>();
         Order order = createOrder();
         orders.add(order);
@@ -119,34 +119,15 @@ public class OrderServiceTest {
     }
 
     @Test
-    void shouldReturnAllOrdersByStatusCreatedSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
-        List<Order> orders = new ArrayList<>();
-        Order order = createOrder();
-        orders.add(order);
-        Page<Order> page = new PageImpl<>(orders, pageable, orders.size());
-
-        when(orderRepository.findByStatus(any(Status.class), any(Pageable.class))).thenReturn(page);
-
-        Page<OrderResponse> responses = orderService.getAllOrders(Status.CREATED, pageable);
-
-        assertNotNull(responses);
-        assertEquals("Product Test", responses.getContent().get(0).orderItems().get(0).productName());
-        assertEquals("Category Test", responses.getContent().get(0).orderItems().get(0).categoryName());
-        verify(orderRepository).findByStatus(any(Status.class), any(Pageable.class));
-        verifyNoMoreInteractions(orderRepository);
-    }
-
-    @Test
     void shouldReturnAllOrdersByStatusPaidSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
+        Pageable pageable = PageRequest.of(0, 10);
         List<Order> orders = new ArrayList<>();
         Order order = createOrder();
         order.markAsPaid();
         orders.add(order);
         Page<Order> page = new PageImpl<>(orders, pageable, orders.size());
 
-        when(orderRepository.findByStatus(any(Status.class), any(Pageable.class))).thenReturn(page);
+        when(orderRepository.findByStatus(Status.PAID, pageable)).thenReturn(page);
 
         Page<OrderResponse> responses = orderService.getAllOrders(Status.PAID, pageable);
 
@@ -158,31 +139,8 @@ public class OrderServiceTest {
     }
 
     @Test
-    void shouldReturnAllOrdersByStatusCanceledSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
-
-        List<Order> orders = new ArrayList<>();
-
-        Order order = createOrder();
-        order.cancel();
-        orders.add(order);
-
-        Page<Order> page = new PageImpl<>(orders, pageable, orders.size());
-
-        when(orderRepository.findByStatus(any(Status.class), any(Pageable.class))).thenReturn(page);
-
-        Page<OrderResponse> responses = orderService.getAllOrders(Status.CANCELLED, pageable);
-
-        assertNotNull(responses);
-        assertEquals("Product Test", responses.getContent().get(0).orderItems().get(0).productName());
-        assertEquals("Category Test", responses.getContent().get(0).orderItems().get(0).categoryName());
-        verify(orderRepository).findByStatus(any(Status.class), any(Pageable.class));
-        verifyNoMoreInteractions(orderRepository);
-    }
-
-    @Test
     void shouldReturnOrdersByUserAndStatusSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
+        Pageable pageable = PageRequest.of(0, 10);
 
         List<Order> orders = new ArrayList<>();
 
@@ -209,7 +167,7 @@ public class OrderServiceTest {
 
     @Test
     void shouldReturnOrdersByUserSuccessfully() {
-        Pageable pageable = PageRequest.of(1, 10);
+        Pageable pageable = PageRequest.of(0, 10);
 
         List<Order> orders = new ArrayList<>();
 
@@ -219,7 +177,7 @@ public class OrderServiceTest {
 
         Page<Order> page = new PageImpl<>(orders, pageable, orders.size());
 
-        when(orderRepository.findByUserId(1L,pageable)).thenReturn(page);
+        when(orderRepository.findByUserId(1L, pageable)).thenReturn(page);
 
         Page<OrderResponse> responses = orderService.getOrdersByUser(1L, pageable);
 
@@ -275,7 +233,7 @@ public class OrderServiceTest {
     //TODO EXCEPTIONS
 
     @Test
-    void shouldPayOrderSuccessfully(){
+    void shouldPayOrderSuccessfully() {
         Order savedOrder = createOrder();
         ReflectionTestUtils.setField(savedOrder, "id", id);
 
@@ -290,12 +248,15 @@ public class OrderServiceTest {
     }
 
     @Test
-    void shouldCancelOrderSuccessfully(){
+    void shouldCancelOrderSuccessfully() {
         Order savedOrder = createOrder();
         ReflectionTestUtils.setField(savedOrder, "id", id);
 
         when(orderRepository.findById(id)).thenReturn(Optional.of(savedOrder));
         orderService.cancelOrder(id);
+
+        Product product = savedOrder.getOrderItems().get(0).getProduct();
+        assertEquals(100, product.getStock());
 
         verify(orderRepository).findById(id);
         verify(orderRepository).save(argThat(order ->
