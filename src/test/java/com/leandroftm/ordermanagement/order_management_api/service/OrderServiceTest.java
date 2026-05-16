@@ -6,6 +6,11 @@ import com.leandroftm.ordermanagement.order_management_api.domain.dto.response.O
 import com.leandroftm.ordermanagement.order_management_api.domain.entity.*;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderStatusException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.OrderNotFoundException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InsuficientStockException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductNotFoundException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserNotFoundException;
 import com.leandroftm.ordermanagement.order_management_api.repository.OrderRepository;
 import com.leandroftm.ordermanagement.order_management_api.repository.ProductRepository;
 import com.leandroftm.ordermanagement.order_management_api.repository.UserRepository;
@@ -26,8 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
@@ -230,8 +234,6 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(orderRepository);
     }
 
-    //TODO EXCEPTIONS
-
     @Test
     void shouldPayOrderSuccessfully() {
         Order savedOrder = createOrder();
@@ -264,6 +266,111 @@ public class OrderServiceTest {
         verifyNoMoreInteractions(orderRepository);
     }
 
+    //EXCEPTIONS
+
+    @Test
+    void shouldReturnNotFoundWhenProductNotFound() {
+        List<CreateOrderItemRequest> orderItemRequest = new ArrayList<>();
+        orderItemRequest.add(new CreateOrderItemRequest(1, 1L));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                orderItemRequest
+        );
+
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ProductNotFoundException.class, () -> orderService.createOrder(1L, request));
+        verifyNoMoreInteractions(productRepository);
+        verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenProductStockIsInsufficient() {
+        List<CreateOrderItemRequest> orderItemRequest = new ArrayList<>();
+        orderItemRequest.add(new CreateOrderItemRequest(50, 1L));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                orderItemRequest
+        );
+
+        Product savedProduct = new Product(
+                "Product test",
+                "",
+                new BigDecimal("100.00"),
+                1
+        );
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
+
+        assertThrows(InsuficientStockException.class, () -> orderService.createOrder(1L, request));
+        verifyNoMoreInteractions(productRepository);
+        verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUserNotFound() {
+        List<CreateOrderItemRequest> orderItemRequest = new ArrayList<>();
+        orderItemRequest.add(new CreateOrderItemRequest(1, 1L));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                orderItemRequest
+        );
+
+        Product savedProduct = new Product(
+                "Product test",
+                "",
+                new BigDecimal("100.00"),
+                100
+        );
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> orderService.createOrder(1L, request));
+
+        verifyNoMoreInteractions(userRepository, productRepository);
+        verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenFindingOrdersByUserNotFound() {
+        when(orderRepository.findByIdAndUserId(id, 1L)).thenReturn(Optional.empty());
+        assertThrows(OrderNotFoundException.class, () -> orderService.findByIdAndUserId(id, 1L));
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenOrderNotFound() {
+        when(orderRepository.findById(id)).thenReturn(Optional.empty());
+        assertThrows(OrderNotFoundException.class, () -> orderService.getOrder(id));
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenOrderStatusIsInvalid() {
+        Order savedOrder = createOrder();
+        ReflectionTestUtils.setField(savedOrder, "id", id);
+        savedOrder.markAsPaid();
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(savedOrder));
+
+        assertThrows(InvalidOrderStatusException.class, () -> orderService.payOrder(id));
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenOrderStatusIsInvalidWhenCancellingOrder() {
+        Order savedOrder = createOrder();
+        ReflectionTestUtils.setField(savedOrder, "id", id);
+        savedOrder.markAsPaid();
+
+        when(orderRepository.findById(id)).thenReturn(Optional.of(savedOrder));
+
+        assertThrows(InvalidOrderStatusException.class, () -> orderService.cancelOrder(id));
+        verifyNoMoreInteractions(orderRepository);
+    }
+
+    //helper
     private static @NonNull List<OrderItem> getOrderItems() {
         List<OrderItem> orderItems = new ArrayList<>();
         Product product = new Product(
@@ -283,8 +390,6 @@ public class OrderServiceTest {
         return orderItems;
     }
 
-
-    //helper
     public Order createOrder() {
         List<OrderItem> orderItems = new ArrayList<>();
         Product product = new Product(
