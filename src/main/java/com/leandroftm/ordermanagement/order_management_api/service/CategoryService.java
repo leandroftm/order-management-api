@@ -38,7 +38,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponse getById(Long id) {
+    public CategoryResponse findById(Long id) {
         return categoryRepository.findById(id).map(CategoryResponse::new)
                 .orElseThrow(CategoryNotFoundException::new);
     }
