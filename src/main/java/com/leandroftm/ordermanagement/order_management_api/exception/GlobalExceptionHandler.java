@@ -8,11 +8,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,6 +37,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
         String message = "Invalid value " + ex.getValue() + "for parameter " + ex.getName();
         return buildError(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, message, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+        return  buildError(HttpStatus.FORBIDDEN, ErrorCode.INVALID_CREDENTIALS, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiError> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.FORBIDDEN, ErrorCode.INVALID_CREDENTIALS, ex.getMessage(), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
