@@ -89,7 +89,7 @@ public class CategoryServiceTest {
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(category));
 
-        CategoryResponse response = categoryService.getById(id);
+        CategoryResponse response = categoryService.findById(id);
 
         assertNotNull(response);
         assertEquals("Category test", response.name());
@@ -214,7 +214,7 @@ public class CategoryServiceTest {
             when(categoryRepository.findById(id)).thenReturn(Optional.empty());
 
             assertThrows(CategoryNotFoundException.class,
-                    () -> categoryService.getById(id));
+                    () -> categoryService.findById(id));
 
             verifyNoMoreInteractions(categoryRepository);
         }
