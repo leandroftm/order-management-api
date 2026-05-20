@@ -3,8 +3,8 @@ package com.leandroftm.ordermanagement.order_management_api.exception.domain.pro
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
 
-public class InsuficientStockException extends DomainException {
-    public InsuficientStockException() {
+public class InsufficientStockException extends DomainException {
+    public InsufficientStockException() {
         super(
                 "Insufficient stock amount",
                 ErrorCode.INSUFFICIENT_STOCK
