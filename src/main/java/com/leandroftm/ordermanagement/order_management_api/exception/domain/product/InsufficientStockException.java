@@ -6,7 +6,7 @@ import com.leandroftm.ordermanagement.order_management_api.exception.enums.Error
 public class InsuficientStockException extends DomainException {
     public InsuficientStockException() {
         super(
-                "Insuficient stock amount",
+                "Insufficient stock amount",
                 ErrorCode.INSUFFICIENT_STOCK
         );
     }
