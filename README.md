@@ -14,7 +14,7 @@ Spring Data JPA
 Lombok
 PostgreSQL
 Flyway
-H2
+H2 Database (tests)
 Swagger / OpenAPI
 JUnit 5
 Mockito
@@ -28,7 +28,7 @@ Maven
 - User registration
 - JWT authentication
 - Role-based authorization (USER / ADMIN)
-- Protected endpoints using Spring Security
+- Protected endpoints with JWT authentication and Spring Security
 ```
 
 ## Users
@@ -48,7 +48,7 @@ Update Category data
 List all Categories
 ```
 
-Products
+## Products
 
 ```
 Create Products inside Categories
@@ -59,7 +59,7 @@ Enable/Disable Products
 Product listing with pagination
 ```
 
-Orders
+## Orders
 
 ```
 Create Orders
@@ -203,7 +203,7 @@ Response:
 
 ## Testing
 
-The project contains:
+The project includes:
 - Service layer unit tests
 - Controller tests using MockMvc
 - Global Exception Handler tests
@@ -217,39 +217,19 @@ The project contains:
 ## Project Structure
 ```
 src/main/java
-├── domain
-   ├── controller
-   ├── dto
-   ├── entity
-   ├── enums
-├── exception
-├── repository
-├── security
+├── controller
 ├── service
+├── repository
+├── domain
 ├── security
-      ├── config
-      ├── controller
-      ├── dto
-      ├── entity
-      ├── filter
-      ├── service
-resources
-├── db.migration
-
-src/main/test
-├── java
-   ├── ...
-      ├── controller
-      ├── exceptions
-      ├── resources
-      ├── service
+├── exception
 ```
 
-# Main COncepts Practiced
+# Main Concepts Practiced
 
 - REST API design
 - DTO pattern
-- Service layer architeture
+- Service layer architecture
 - JWT authentication
 - Role-based authorization
 - Exception handling
