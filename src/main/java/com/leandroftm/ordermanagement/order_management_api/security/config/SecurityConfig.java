@@ -1,7 +1,6 @@
 package com.leandroftm.ordermanagement.order_management_api.security.config;
 
 import com.leandroftm.ordermanagement.order_management_api.security.filter.JwtAuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
