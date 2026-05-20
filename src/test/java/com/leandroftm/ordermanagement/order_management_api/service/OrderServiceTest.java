@@ -8,7 +8,7 @@ import com.leandroftm.ordermanagement.order_management_api.domain.enums.Role;
 import com.leandroftm.ordermanagement.order_management_api.domain.enums.Status;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.InvalidOrderStatusException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.order.OrderNotFoundException;
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InsuficientStockException;
+import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.InsufficientStockException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.product.ProductNotFoundException;
 import com.leandroftm.ordermanagement.order_management_api.exception.domain.user.UserNotFoundException;
 import com.leandroftm.ordermanagement.order_management_api.repository.OrderRepository;
@@ -302,7 +302,7 @@ public class OrderServiceTest {
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(savedProduct));
 
-        assertThrows(InsuficientStockException.class, () -> orderService.createOrder(1L, request));
+        assertThrows(InsufficientStockException.class, () -> orderService.createOrder(1L, request));
         verifyNoMoreInteractions(productRepository);
         verifyNoInteractions(orderRepository);
     }
