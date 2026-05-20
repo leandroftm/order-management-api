@@ -183,3 +183,83 @@ POST /auth/register
   "password": "123456"
 }
 ```
+
+### Login
+```http
+POST /auth/login
+```
+```json
+{
+  "email": "admin@email.com",
+  "password": "123456"
+}
+```
+Response:
+```json
+{
+  "token": "jwt-token"
+}
+```
+
+## Testing
+
+The project contains:
+- Service layer unit tests
+- Controller tests using MockMvc
+- Global Exception Handler tests
+- Security authorization tests
+
+ Tools used:
+- JUnit 5
+- Mockito
+- Spring Boot Test
+
+## Project Structure
+```
+src/main/java
+├── domain
+   ├── controller
+   ├── dto
+   ├── entity
+   ├── enums
+├── exception
+├── repository
+├── security
+├── service
+├── security
+      ├── config
+      ├── controller
+      ├── dto
+      ├── entity
+      ├── filter
+      ├── service
+resources
+├── db.migration
+
+src/main/test
+├── java
+   ├── ...
+      ├── controller
+      ├── exceptions
+      ├── resources
+      ├── service
+```
+
+# Main COncepts Practiced
+
+- REST API design
+- DTO pattern
+- Service layer architeture
+- JWT authentication
+- Role-based authorization
+- Exception handling
+- Database migrations
+- Unit and controller testing
+- Pagination
+- Validation
+- PostgreSQL Integration
+
+
+# Author
+
+Leandro Torres
