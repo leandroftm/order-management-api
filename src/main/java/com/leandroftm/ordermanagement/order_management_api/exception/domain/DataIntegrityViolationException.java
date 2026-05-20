@@ -1,13 +1,14 @@
-package com.leandroftm.ordermanagement.order_management_api.exception;
+package com.leandroftm.ordermanagement.order_management_api.exception.domain;
 
-import com.leandroftm.ordermanagement.order_management_api.exception.domain.DomainException;
 import com.leandroftm.ordermanagement.order_management_api.exception.enums.ErrorCode;
+import lombok.Getter;
 
-public class DataIntegrityViolationException extends DomainException {
-    public DataIntegrityViolationException(String message,  ErrorCode errorCode) {
-        super(
-                message,
-                errorCode
-        );
+@Getter
+public class DataIntegrityViolationException extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public DataIntegrityViolationException(String message, ErrorCode errorCode) {
+        super(message);
+        this.errorCode = errorCode;
     }
 }
