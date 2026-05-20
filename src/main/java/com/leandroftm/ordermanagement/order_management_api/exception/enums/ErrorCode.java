@@ -2,7 +2,7 @@ package com.leandroftm.ordermanagement.order_management_api.exception.enums;
 
 public enum ErrorCode {
     UNEXPECTED_ERROR,
-    VALIDATION_ERROR,
+    VALIDATION_EXCEPTION,
     INVALID_CREDENTIALS,
     USER_NOT_FOUND,
     USER_ALREADY_EXISTS,
@@ -36,5 +36,7 @@ public enum ErrorCode {
     INVALID_PRODUCT_PRICE,
     INVALID_STOCK_VALUE,
     INVALID_STOCK_AMOUNT_VALUE,
-    INSUFFICIENT_STOCK
+    INSUFFICIENT_STOCK,
+    NOT_FOUND,
+    CONFLICT
 }
